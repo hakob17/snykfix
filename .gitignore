@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+config.yaml
+
+# Runtime output
+work/
+snykfix-report.*
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store

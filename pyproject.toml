@@ -1,0 +1,19 @@
+[project]
+name = "snykfix"
+version = "0.1.0"
+description = "Group Snyk tickets from Azure DevOps by root cause, fix them with an agent, and propagate fixes across repos"
+requires-python = ">=3.11"
+dependencies = ["requests>=2.31", "pyyaml>=6", "anthropic>=0.40"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+snykfix = "snykfix.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["snykfix"]

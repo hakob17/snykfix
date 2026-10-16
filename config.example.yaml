@@ -1,0 +1,45 @@
+ado_org: my-ado-org
+ado_project: Security
+# Open Snyk work items. Adjust tag/area to however your Snyk -> ADO integration files them.
+wiql: >
+  SELECT [System.Id] FROM WorkItems
+  WHERE [System.TeamProject] = @project
+    AND [System.Tags] CONTAINS 'snyk'
+    AND [System.State] NOT IN ('Done', 'Closed', 'Resolved', 'Removed')
+
+# One capture group -> "owner/repo". Default matches any github.com/owner/repo link in the ticket.
+repo_regex: 'github\.com/([\w.-]+/[\w.-]+)'
+
+# Your own packages, by ecosystem naming (maven = group:artifact).
+internal_patterns:
+  - "@acme/*"
+  - "com.acme*"
+  - "Acme.*"
+  - "acme-*"
+
+# Internal package -> repo that builds/publishes it. Releases must be GitHub Releases
+# with tags like v1.2.3 or pkg@1.2.3.
+lib_repos:
+  "@acme/http-client": acme/http-client
+  "com.acme:acme-core": acme/acme-core-java
+  "Acme.Common": acme/acme-common-dotnet
+  "acme-utils": acme/acme-utils-py
+
+# Also scan these (consumers of shared libs that may not have tickets yet).
+extra_repos: []
+
+# Restore dependencies before `snyk test` where Snyk needs them. Keep output in gitignored dirs.
+prescan:
+  "**/*.sln": dotnet restore
+  "**/*.csproj": dotnet restore
+  "requirements.txt": pip install -q -r requirements.txt
+  "pyproject.toml": pip install -q .
+  "pom.xml": mvn -q -B dependency:resolve
+  "build.gradle*": ./gradlew --quiet dependencies
+
+max_prs_per_run: 5
+auto_resolve: true
+resolved_state: Resolved
+planner_model: claude-opus-5-5
+fix_model: claude-sonnet-5-5
+fix_max_turns: 80
