@@ -1,12 +1,16 @@
 """Runs Claude Code headless inside a cloned repo to make the actual fix."""
 import json
 import os
+import shutil
 import subprocess
+import sys
 import tempfile
 
 from .grouping import Campaign
 
-MCP = {"mcpServers": {"snyk": {"command": "snyk", "args": ["mcp", "-t", "stdio"]}}}
+# On Windows npm CLIs are .cmd shims, which need cmd /c to be spawned.
+_SNYK = ["cmd", "/c", "snyk"] if sys.platform == "win32" else ["snyk"]
+MCP = {"mcpServers": {"snyk": {"command": _SNYK[0], "args": _SNYK[1:] + ["mcp", "-t", "stdio"]}}}
 
 COMMON = """
 How to work:
@@ -60,7 +64,7 @@ def run(repo_dir: str, prompt: str, model: str, max_turns: int) -> str:
     try:
         # bypassPermissions is acceptable only because this runs on an ephemeral CI runner.
         p = subprocess.run(
-            ["claude", "-p", prompt, "--model", model, "--mcp-config", mcp.name,
+            [shutil.which("claude") or "claude", "-p", prompt, "--model", model, "--mcp-config", mcp.name,
              "--permission-mode", "bypassPermissions", "--max-turns", str(max_turns), "--output-format", "json"],
             cwd=repo_dir, capture_output=True, text=True, timeout=3600,
         )

@@ -1,6 +1,7 @@
 """Run the Snyk CLI and normalise its output. Ticket text is lossy; this is the source of truth."""
 import glob
 import json
+import shutil
 import subprocess
 from dataclasses import dataclass
 
@@ -40,7 +41,7 @@ def prescan(repo_dir: str, commands: dict[str, str]) -> None:
 
 
 def scan_repo(repo_dir: str, repo: str) -> list[Finding]:
-    p = subprocess.run(["snyk", "test", "--all-projects", "--json"], cwd=repo_dir,
+    p = subprocess.run([shutil.which("snyk") or "snyk", "test", "--all-projects", "--json"], cwd=repo_dir,
                        capture_output=True, text=True)
     if p.returncode not in (0, 1):  # 1 = vulns found; 2/3 = failure / no supported manifests
         raise ScanError(f"{repo}: snyk exit {p.returncode}: {(p.stderr or p.stdout)[:1500]}")
